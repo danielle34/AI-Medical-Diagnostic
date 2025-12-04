@@ -1,0 +1,73 @@
+
+[
+    {
+        "id": 101,
+        "name": "Sarah J. (Athlete)",
+        "age": 24,
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
+        "biomarkers": {
+            "glucose": 85,
+            "insulin": 5,
+            "a1c": 4.8,
+            "albumin": 4
+        },
+        "risk_probability": 0.21987047791481018,
+        "risk_label": "Low Risk"
+    },
+    {
+        "id": 102,
+        "name": "Marcus R. (Pre-Risk)",
+        "age": 45,
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Marcus",
+        "biomarkers": {
+            "glucose": 115,
+            "insulin": 12,
+            "a1c": 5.9,
+            "albumin": 15
+        },
+        "risk_probability": 0.7722335457801819,
+        "risk_label": "High Risk"
+    },
+    {
+        "id": 103,
+        "name": "Elena D. (High Risk)",
+        "age": 58,
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Elena",
+        "biomarkers": {
+            "glucose": 180,
+            "insulin": 28,
+            "a1c": 7.5,
+            "albumin": 120
+        },
+        "risk_probability": 0.8682656288146973,
+        "risk_label": "High Risk"
+    },
+    {
+        "id": 104,
+        "name": "David W. (Uncontrolled)",
+        "age": 62,
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=David",
+        "biomarkers": {
+            "glucose": 240,
+            "insulin": 35,
+            "a1c": 9.1,
+            "albumin": 250
+        },
+        "risk_probability": 0.8765262365341187,
+        "risk_label": "High Risk"
+    },
+    {
+        "id": 105,
+        "name": "Priya K. (Healthy)",
+        "age": 31,
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Priya",
+        "biomarkers": {
+            "glucose": 92,
+            "insulin": 7,
+            "a1c": 5.1,
+            "albumin": 8
+        },
+        "risk_probability": 0.30039289593696594,
+        "risk_label": "Low Risk"
+    }
+]

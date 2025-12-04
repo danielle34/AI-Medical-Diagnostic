@@ -3,166 +3,236 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Diagnostic Dashboard</title>
+    <title>MediPredict AI - Interactive Analytics</title>
     
-    <!-- Tailwind CSS (Styling) -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Chart.js (Graphing Engine) -->
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
-        .card { transition: all 0.2s; }
-        .card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
-        .selected-row { background-color: #eff6ff; border-left: 4px solid #3b82f6; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f1f5f9; }
+        .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        .selected-row { background-color: #f0f9ff; border-right: 4px solid #3b82f6; }
         
-        /* Scrollbar styling */
+        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
 </head>
 <body class="flex h-screen overflow-hidden text-slate-800">
 
-    <!-- SIDEBAR: Patient List -->
-    <div class="w-80 bg-white border-r border-slate-200 flex flex-col z-20 shadow-xl">
-        <div class="p-6 border-b border-slate-100 bg-slate-900 text-white">
-            <h1 class="text-xl font-bold flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center">
-                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+    <!-- SIDEBAR -->
+    <div class="w-80 bg-white flex flex-col z-30 shadow-2xl border-r border-slate-200">
+        <!-- Brand -->
+        <div class="p-6 bg-slate-900 text-white">
+            <div class="flex items-center gap-3 mb-1">
+                <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/50">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
                 </div>
-                MediPredict AI
-            </h1>
-            <p class="text-xs text-slate-400 mt-2 font-mono">Cohort Analysis v2.1</p>
+                <h1 class="text-xl font-bold tracking-tight">MediPredict</h1>
+            </div>
+            <p class="text-xs text-slate-400 pl-11">Advanced Neural Diagnostics</p>
         </div>
         
-        <div class="p-3 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
-            <h2 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Patient Cohort</h2>
-            <span class="text-xs bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full" id="patient-count">...</span>
+        <!-- Filters -->
+        <div class="p-4 border-b border-slate-100 bg-slate-50/50">
+            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Filter Cohort</p>
+            <div class="flex gap-2">
+                <button onclick="filterPatients('all')" id="btn-all" class="flex-1 py-1.5 text-xs font-semibold rounded-md bg-white border border-slate-200 shadow-sm hover:bg-slate-50 transition-colors">All</button>
+                <button onclick="filterPatients('high')" id="btn-high" class="flex-1 py-1.5 text-xs font-semibold rounded-md bg-white border border-slate-200 shadow-sm hover:bg-red-50 hover:text-red-600 transition-colors">High Risk</button>
+            </div>
         </div>
 
-        <div id="patient-list" class="overflow-y-auto flex-1">
-            <!-- Patient items injected via JS -->
-            <div class="p-8 text-center text-slate-400 text-sm animate-pulse">
-                Loading profiles.json...
-            </div>
+        <!-- List -->
+        <div id="patient-list" class="overflow-y-auto flex-1 p-2 space-y-1">
+            <!-- Items via JS -->
+            <div class="p-8 text-center text-slate-400 text-sm animate-pulse">Loading profiles.json...</div>
+        </div>
+        
+        <!-- Stats Footer -->
+        <div class="p-4 border-t border-slate-100 bg-slate-50 text-xs text-slate-500 flex justify-between">
+            <span id="total-patients">0 Patients</span>
+            <span>v2.4 Live</span>
         </div>
     </div>
 
-    <!-- MAIN PANEL: Analytics -->
-    <div class="flex-1 flex flex-col h-full overflow-hidden relative">
+    <!-- MAIN DASHBOARD -->
+    <div class="flex-1 flex flex-col h-full overflow-hidden bg-slate-100 relative">
         
-        <!-- Top Navigation Bar -->
-        <div class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shadow-sm z-10">
-            <div class="flex items-center gap-4">
-                <h2 id="view-name" class="text-2xl font-bold text-slate-800">Select a Patient</h2>
-                <div class="h-6 w-px bg-slate-200"></div>
-                <p id="view-id" class="text-slate-500 font-mono text-sm">ID: --</p>
-            </div>
-            <div id="risk-badge" class="px-4 py-1.5 rounded-full text-sm font-bold bg-slate-100 text-slate-400 border border-slate-200 flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-slate-400"></span>
-                Status: Unknown
-            </div>
-        </div>
+        <!-- Top decorative gradient -->
+        <div class="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-blue-900 to-slate-100 z-0"></div>
 
-        <!-- Scrollable Content Area -->
-        <div class="flex-1 overflow-y-auto p-8 bg-slate-50">
-            
-            <div class="max-w-6xl mx-auto space-y-6">
+        <!-- Scrollable Content -->
+        <div class="flex-1 overflow-y-auto z-10 p-6 lg:p-10">
+            <div class="max-w-7xl mx-auto space-y-8">
 
-                <!-- 1. Key Metrics Grid -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 card">
-                        <div class="flex justify-between items-start mb-2">
-                            <p class="text-xs font-semibold text-slate-400 uppercase">Fasting Glucose</p>
-                            <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                <!-- 1. PATIENT PASSPORT CARD (New Feature) -->
+                <div class="bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row relative animate-[fadeIn_0.5s_ease-out]">
+                    <!-- Left: Avatar & Identity -->
+                    <div class="md:w-1/3 bg-slate-50 p-8 flex flex-col items-center justify-center border-r border-slate-100 relative">
+                        <div class="absolute top-4 left-4 text-xs font-mono text-slate-400">PASSPORT ID</div>
+                        <!-- Large Interactive Avatar -->
+                        <div class="w-32 h-32 rounded-full p-1 bg-white shadow-lg mb-4 ring-4 ring-blue-50 relative group cursor-pointer">
+                            <img id="passport-img" src="" class="w-full h-full rounded-full object-cover group-hover:scale-105 transition-transform duration-300">
+                            <div id="passport-risk-dot" class="absolute bottom-2 right-2 w-6 h-6 rounded-full border-4 border-white bg-green-500 shadow-md"></div>
                         </div>
-                        <p id="stat-glucose" class="text-3xl font-bold text-slate-800">--</p>
-                        <p class="text-xs text-slate-500 mt-1">mg/dL</p>
-                    </div>
-                    
-                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 card">
-                        <div class="flex justify-between items-start mb-2">
-                            <p class="text-xs font-semibold text-slate-400 uppercase">Insulin</p>
-                            <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                        </div>
-                        <p id="stat-insulin" class="text-3xl font-bold text-slate-800">--</p>
-                        <p class="text-xs text-slate-500 mt-1">uU/mL</p>
-                    </div>
-                    
-                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 card">
-                        <div class="flex justify-between items-start mb-2">
-                            <p class="text-xs font-semibold text-slate-400 uppercase">A1C Level</p>
-                            <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        </div>
-                        <p id="stat-a1c" class="text-3xl font-bold text-slate-800">--</p>
-                        <p class="text-xs text-slate-500 mt-1">%</p>
-                    </div>
-                    
-                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 card">
-                        <div class="flex justify-between items-start mb-2">
-                            <p class="text-xs font-semibold text-slate-400 uppercase">Albumin</p>
-                            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
-                        </div>
-                        <p id="stat-albumin" class="text-3xl font-bold text-slate-800">--</p>
-                        <p class="text-xs text-slate-500 mt-1">ug/mL</p>
-                    </div>
-                </div>
-
-                <!-- 2. AI Analysis Section -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    
-                    <!-- Left: Risk Gauge -->
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 lg:col-span-1 flex flex-col">
-                        <h3 class="font-bold text-slate-700 mb-6 flex items-center gap-2">
-                            <span class="w-1.5 h-6 bg-blue-500 rounded-full"></span>
-                            Risk Probability
-                        </h3>
-                        <div class="relative flex-1 min-h-[250px] flex justify-center items-center">
-                            <canvas id="riskChart"></canvas>
-                            <div class="absolute inset-0 flex items-center justify-center flex-col pointer-events-none mt-4">
-                                <span id="risk-percent" class="text-5xl font-bold text-slate-800 tracking-tighter">--%</span>
-                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wide mt-1">Confidence</span>
-                            </div>
+                        <h2 id="passport-name" class="text-2xl font-bold text-slate-800 text-center">--</h2>
+                        <p id="passport-id" class="text-sm text-slate-500 font-mono mb-4">ID: --</p>
+                        <div id="passport-badges" class="flex gap-2">
+                            <!-- Badges injected via JS -->
                         </div>
                     </div>
 
-                    <!-- Right: Biomarker Chart -->
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 lg:col-span-2">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="font-bold text-slate-700 flex items-center gap-2">
-                                <span class="w-1.5 h-6 bg-purple-500 rounded-full"></span>
-                                Biomarker Deviation Analysis
-                            </h3>
-                            <div class="flex gap-4 text-xs">
-                                <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-emerald-400"></span> Healthy Range</span>
-                                <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-red-400"></span> Elevated</span>
-                            </div>
-                        </div>
-                        <div class="h-[250px] w-full">
-                            <canvas id="barChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 3. AI Explanation Box -->
-                <div class="bg-slate-900 text-white p-6 rounded-2xl shadow-lg border border-slate-800 relative overflow-hidden">
-                    <!-- Background Pattern -->
-                    <div class="absolute top-0 right-0 w-64 h-64 bg-blue-500 opacity-10 rounded-full blur-3xl -mr-32 -mt-32"></div>
-                    
-                    <div class="relative z-10">
-                        <h3 class="font-bold flex items-center gap-2 mb-3 text-lg">
-                            <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                            Neural Network Assessment
-                        </h3>
-                        <p id="ai-explanation" class="text-slate-300 leading-relaxed max-w-4xl">
-                            Select a patient from the sidebar to view the predictive model's analysis of their biomarkers.
+                    <!-- Right: AI Summary -->
+                    <div class="md:w-2/3 p-8 flex flex-col justify-center bg-white relative overflow-hidden">
+                        <!-- BG Decoration -->
+                        <svg class="absolute -right-10 -bottom-10 w-64 h-64 text-slate-50" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                        
+                        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Neural Network Assessment</h3>
+                        <p id="ai-summary-text" class="text-lg text-slate-700 leading-relaxed font-medium relative z-10">
+                            Select a patient profile to initiate analysis...
                         </p>
+                    </div>
+                </div>
+
+                <!-- 2. METRICS GRID -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Metric Card 1 -->
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 transition-all card-hover group">
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="text-xs font-bold text-slate-400 uppercase">Glucose</span>
+                            <div class="p-1.5 bg-blue-50 rounded-lg text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            </div>
+                        </div>
+                        <div class="flex items-end gap-2">
+                            <span id="metric-glucose" class="text-3xl font-bold text-slate-800">--</span>
+                            <span class="text-sm text-slate-400 mb-1">mg/dL</span>
+                        </div>
+                        <div class="w-full bg-slate-100 h-1.5 rounded-full mt-3 overflow-hidden">
+                            <div id="bar-glucose" class="h-full bg-blue-500 rounded-full" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Metric Card 2 -->
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 transition-all card-hover group">
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="text-xs font-bold text-slate-400 uppercase">Insulin</span>
+                            <div class="p-1.5 bg-purple-50 rounded-lg text-purple-500 group-hover:bg-purple-500 group-hover:text-white transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                            </div>
+                        </div>
+                        <div class="flex items-end gap-2">
+                            <span id="metric-insulin" class="text-3xl font-bold text-slate-800">--</span>
+                            <span class="text-sm text-slate-400 mb-1">uU/mL</span>
+                        </div>
+                        <div class="w-full bg-slate-100 h-1.5 rounded-full mt-3 overflow-hidden">
+                            <div id="bar-insulin" class="h-full bg-purple-500 rounded-full" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Metric Card 3 -->
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 transition-all card-hover group">
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="text-xs font-bold text-slate-400 uppercase">A1C Level</span>
+                            <div class="p-1.5 bg-red-50 rounded-lg text-red-500 group-hover:bg-red-500 group-hover:text-white transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </div>
+                        </div>
+                        <div class="flex items-end gap-2">
+                            <span id="metric-a1c" class="text-3xl font-bold text-slate-800">--</span>
+                            <span class="text-sm text-slate-400 mb-1">%</span>
+                        </div>
+                        <div class="w-full bg-slate-100 h-1.5 rounded-full mt-3 overflow-hidden">
+                            <div id="bar-a1c" class="h-full bg-red-500 rounded-full" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Metric Card 4 -->
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 transition-all card-hover group">
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="text-xs font-bold text-slate-400 uppercase">Albumin</span>
+                            <div class="p-1.5 bg-emerald-50 rounded-lg text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                            </div>
+                        </div>
+                        <div class="flex items-end gap-2">
+                            <span id="metric-albumin" class="text-3xl font-bold text-slate-800">--</span>
+                            <span class="text-sm text-slate-400 mb-1">ug/mL</span>
+                        </div>
+                        <div class="w-full bg-slate-100 h-1.5 rounded-full mt-3 overflow-hidden">
+                            <div id="bar-albumin" class="h-full bg-emerald-500 rounded-full" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. VISUALIZATION DECK (New Graphs) -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[400px]">
+                    
+                    <!-- Chart A: Biomarker Fingerprint (Radar) -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col">
+                        <h3 class="font-bold text-slate-700 mb-4 flex items-center gap-2">
+                            <span class="w-2 h-2 bg-indigo-500 rounded-full"></span>
+                            Biomarker Fingerprint
+                        </h3>
+                        <div class="flex-1 relative">
+                            <canvas id="radarChart"></canvas>
+                        </div>
+                        <p class="text-xs text-center text-slate-400 mt-2">Shape comparison vs Healthy Baseline</p>
+                    </div>
+
+                    <!-- Chart B: Population Analysis (Scatter) -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 lg:col-span-2 flex flex-col">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold text-slate-700 flex items-center gap-2">
+                                <span class="w-2 h-2 bg-pink-500 rounded-full"></span>
+                                Cohort Distribution
+                            </h3>
+                            <div class="text-xs text-slate-400 bg-slate-50 px-3 py-1 rounded-full border border-slate-100">
+                                X: Glucose • Y: Insulin
+                            </div>
+                        </div>
+                        <div class="flex-1 relative">
+                            <canvas id="scatterChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. RISK PROBABILITY GAUGE -->
+                <div class="bg-slate-900 rounded-2xl p-8 text-white relative overflow-hidden shadow-2xl">
+                    <div class="absolute top-0 right-0 w-96 h-96 bg-blue-600 rounded-full blur-3xl opacity-20 -mr-20 -mt-20"></div>
+                    
+                    <div class="flex flex-col md:flex-row items-center justify-between relative z-10 gap-8">
+                        <div class="flex-1">
+                            <h3 class="text-lg font-bold text-blue-300 mb-2">Predictive Confidence</h3>
+                            <p class="text-slate-400 text-sm mb-6 leading-relaxed">
+                                This visualization represents the neural network's certainty. Higher percentages indicate a pattern match with known diabetic risk profiles from the training dataset.
+                            </p>
+                            <div class="flex items-center gap-4">
+                                <div class="px-4 py-2 bg-white/10 rounded-lg text-sm border border-white/10">
+                                    Model Accuracy: <span class="text-white font-bold">73%</span>
+                                </div>
+                                <div class="px-4 py-2 bg-white/10 rounded-lg text-sm border border-white/10">
+                                    Features: <span class="text-white font-bold">4</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Circular Gauge -->
+                        <div class="w-48 h-48 relative flex items-center justify-center">
+                            <canvas id="riskDoughnut"></canvas>
+                            <div class="absolute inset-0 flex items-center justify-center flex-col">
+                                <span id="risk-percent-display" class="text-4xl font-bold text-white">--%</span>
+                                <span class="text-[10px] uppercase tracking-widest text-slate-400">Probability</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -172,256 +242,301 @@
 
     <script>
         // ==========================================
-        //  DATA CONFIGURATION (FETCHED EXTERNALLY)
+        //  APP STATE
         // ==========================================
-        
-        // This will now be populated by fetching 'profiles.json'
-        let PATIENT_DATA = [];
+        let ALL_PATIENTS = []; // Store full dataset
+        let FILTERED_PATIENTS = []; // Store current view
+        let SELECTED_INDEX = 0; // Current selection
+
+        // Chart Instances
+        let charts = {
+            radar: null,
+            scatter: null,
+            doughnut: null
+        };
 
         // ==========================================
-        //  DASHBOARD LOGIC
+        //  INIT
         // ==========================================
-
-        let riskChartInstance = null;
-        let barChartInstance = null;
-
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchPatientProfiles();
+        document.addEventListener('DOMContentLoaded', async () => {
+            await fetchProfiles();
         });
 
-        // --- NEW: Fetch logic to load external JSON file ---
-        async function fetchPatientProfiles() {
-            const list = document.getElementById('patient-list');
+        async function fetchProfiles() {
             try {
-                // IMPORTANT: This only works on a local server (http://localhost...)
-                // It will NOT work if you open the file directly (file://...)
-                const response = await fetch('profiles.json');
+                const res = await fetch('profiles.json');
+                if(!res.ok) throw new Error("Failed to load");
+                ALL_PATIENTS = await res.json();
                 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                // Init filtered list
+                FILTERED_PATIENTS = [...ALL_PATIENTS];
                 
-                PATIENT_DATA = await response.json();
+                renderSidebar();
+                updateTotalCount();
                 
-                // Initialize the dashboard once data is loaded
-                if(PATIENT_DATA.length > 0) {
-                    renderPatientList();
+                if(FILTERED_PATIENTS.length > 0) {
                     loadPatient(0);
-                    document.getElementById('patient-count').innerText = PATIENT_DATA.length;
-                } else {
-                    list.innerHTML = `<div class="p-8 text-center text-slate-400 text-sm">profiles.json is empty</div>`;
                 }
-
-            } catch (error) {
-                console.error("Could not load profiles:", error);
-                
-                // Friendly error message for the user
-                list.innerHTML = `
-                    <div class="p-6 text-center">
-                        <div class="inline-flex bg-red-100 text-red-600 p-2 rounded-full mb-3">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                        </div>
-                        <h3 class="text-sm font-bold text-slate-700 mb-2">Cannot Load Data</h3>
-                        <p class="text-xs text-slate-500 mb-4">
-                            Browsers block reading local files directly.
-                        </p>
-                        <div class="text-xs bg-slate-100 p-3 rounded text-left font-mono text-slate-600">
-                            <strong>Solution:</strong><br>
-                            Use "Live Server" extension<br>
-                            OR<br>
-                            python -m http.server
-                        </div>
-                    </div>
-                `;
+            } catch (e) {
+                document.getElementById('patient-list').innerHTML = `
+                    <div class="p-4 text-center">
+                        <p class="text-xs text-red-500 font-bold">Error Loading Data</p>
+                        <p class="text-[10px] text-slate-400">Use Live Server to view.</p>
+                    </div>`;
             }
         }
 
-        function renderPatientList() {
+        // ==========================================
+        //  SIDEBAR LOGIC
+        // ==========================================
+        function renderSidebar() {
             const list = document.getElementById('patient-list');
             list.innerHTML = '';
 
-            PATIENT_DATA.forEach((p, index) => {
-                const div = document.createElement('div');
-                div.className = `p-4 border-b border-slate-100 cursor-pointer hover:bg-slate-50 flex items-center gap-3 transition-all user-row group`;
-                div.id = `user-${index}`;
-                div.onclick = () => loadPatient(index);
-                
-                // Determine risk color
-                const riskColor = p.risk_probability > 0.5 ? 'text-red-500' : 'text-emerald-500';
-                
-                div.innerHTML = `
-                    <div class="relative">
-                        <img src="${p.avatar}" class="w-10 h-10 rounded-full bg-slate-200 border-2 border-white shadow-sm group-hover:scale-105 transition-transform">
-                        <div class="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${p.risk_probability > 0.5 ? 'bg-red-500' : 'bg-emerald-500'}"></div>
-                    </div>
+            FILTERED_PATIENTS.forEach((p, index) => {
+                const el = document.createElement('div');
+                const isHighRisk = p.risk_probability > 0.5;
+                const riskColor = isHighRisk ? 'text-red-500' : 'text-emerald-500';
+                const borderColor = isHighRisk ? 'border-red-200' : 'border-emerald-200';
+
+                el.className = `p-3 m-1 rounded-xl cursor-pointer transition-all flex items-center gap-3 hover:bg-white hover:shadow-sm border border-transparent hover:border-slate-100 sidebar-item`;
+                el.onclick = () => loadPatient(index);
+                el.id = `patient-row-${index}`;
+
+                el.innerHTML = `
+                    <img src="${p.avatar}" class="w-10 h-10 rounded-full bg-slate-100 border-2 ${borderColor}">
                     <div class="flex-1 min-w-0">
-                        <p class="font-bold text-sm text-slate-700 truncate">${p.name}</p>
-                        <p class="text-xs ${riskColor} font-mono">
-                            ${(p.risk_probability * 100).toFixed(1)}% Risk
-                        </p>
+                        <div class="flex justify-between items-center">
+                            <p class="text-sm font-bold text-slate-700 truncate">${p.name}</p>
+                            <span class="text-[10px] font-mono text-slate-400">#${p.id}</span>
+                        </div>
+                        <p class="text-xs ${riskColor} font-semibold">${(p.risk_probability * 100).toFixed(1)}% Risk</p>
                     </div>
-                    <svg class="w-4 h-4 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                 `;
-                list.appendChild(div);
+                list.appendChild(el);
             });
         }
 
+        function filterPatients(type) {
+            // Update UI Buttons
+            document.querySelectorAll('button[id^="btn-"]').forEach(b => b.classList.remove('bg-slate-100', 'ring-2', 'ring-blue-200'));
+            document.getElementById(`btn-${type}`).classList.add('bg-slate-100', 'ring-2', 'ring-blue-200');
+
+            if (type === 'all') {
+                FILTERED_PATIENTS = [...ALL_PATIENTS];
+            } else if (type === 'high') {
+                FILTERED_PATIENTS = ALL_PATIENTS.filter(p => p.risk_probability > 0.5);
+            }
+            
+            renderSidebar();
+            updateTotalCount();
+            if(FILTERED_PATIENTS.length > 0) loadPatient(0);
+        }
+
+        function updateTotalCount() {
+            document.getElementById('total-patients').innerText = `${FILTERED_PATIENTS.length} Patients`;
+        }
+
+        // ==========================================
+        //  MAIN LOAD LOGIC
+        // ==========================================
         function loadPatient(index) {
-            const data = PATIENT_DATA[index];
+            SELECTED_INDEX = index;
+            const data = FILTERED_PATIENTS[index];
             if (!data) return;
 
-            const prob = data.risk_probability;
-            const pct = (prob * 100).toFixed(1);
+            // 1. Highlight Sidebar
+            document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('bg-white', 'shadow-sm', 'border-slate-200', 'selected-row'));
+            const activeRow = document.getElementById(`patient-row-${index}`);
+            if(activeRow) activeRow.classList.add('bg-white', 'shadow-sm', 'selected-row');
 
-            // Update List Selection Style
-            document.querySelectorAll('.user-row').forEach(r => {
-                r.classList.remove('selected-row', 'bg-blue-50');
-            });
-            const row = document.getElementById(`user-${index}`);
-            if(row) row.classList.add('selected-row', 'bg-blue-50');
-
-            // Header Info
-            document.getElementById('view-name').innerText = data.name;
-            document.getElementById('view-id').innerText = `ID: #${data.id} • Age: ${data.age}`;
+            // 2. Update Passport (Header)
+            document.getElementById('passport-name').innerText = data.name;
+            document.getElementById('passport-id').innerText = `ID: #${data.id} • Age: ${data.age}`;
+            document.getElementById('passport-img').src = data.avatar;
             
-            // Risk Badge
-            const badge = document.getElementById('risk-badge');
-            const isHighRisk = prob > 0.5;
-            
-            if (isHighRisk) {
-                badge.className = "px-4 py-1.5 rounded-full text-sm font-bold bg-red-50 text-red-600 border border-red-100 flex items-center gap-2 shadow-sm";
-                badge.innerHTML = `<span class="relative flex h-2.5 w-2.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span></span> High Risk Detected`;
-            } else {
-                badge.className = "px-4 py-1.5 rounded-full text-sm font-bold bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center gap-2 shadow-sm";
-                badge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Low Risk Profile`;
-            }
+            const isHigh = data.risk_probability > 0.5;
+            const dot = document.getElementById('passport-risk-dot');
+            dot.className = `absolute bottom-2 right-2 w-6 h-6 rounded-full border-4 border-white shadow-md ${isHigh ? 'bg-red-500 animate-pulse' : 'bg-emerald-500'}`;
 
-            // Stats
-            animateValue("stat-glucose", parseInt(document.getElementById('stat-glucose').innerText) || 0, data.biomarkers.glucose, 500);
-            animateValue("stat-insulin", parseInt(document.getElementById('stat-insulin').innerText) || 0, data.biomarkers.insulin, 500);
-            animateValue("stat-a1c", parseFloat(document.getElementById('stat-a1c').innerText) || 0, data.biomarkers.a1c, 500, true); // true for float
-            animateValue("stat-albumin", parseInt(document.getElementById('stat-albumin').innerText) || 0, data.biomarkers.albumin, 500);
+            // Badges
+            const badgesDiv = document.getElementById('passport-badges');
+            badgesDiv.innerHTML = isHigh 
+                ? `<span class="px-3 py-1 bg-red-100 text-red-600 rounded-full text-xs font-bold border border-red-200">High Risk</span>`
+                : `<span class="px-3 py-1 bg-emerald-100 text-emerald-600 rounded-full text-xs font-bold border border-emerald-200">Healthy</span>`;
 
-            // Charts
-            renderRiskChart(prob);
-            renderBarChart(data.biomarkers);
+            // 3. AI Text Summary
+            const pct = (data.risk_probability * 100).toFixed(1);
+            document.getElementById('ai-summary-text').innerHTML = isHigh 
+                ? `AI Alert: <span class="text-red-600">${pct}% Probability</span>. Patient exhibits elevated glucose (${data.biomarkers.glucose}) and insulin resistance patterns.`
+                : `AI Analysis: <span class="text-emerald-600">${pct}% Probability</span>. Biomarkers are within nominal ranges. Maintain routine monitoring.`;
 
-            // AI Explanation
-            updateExplanation(data, prob, pct);
+            // 4. Update Metric Bars
+            updateMetric('glucose', data.biomarkers.glucose, 200); // Max 200 reference
+            updateMetric('insulin', data.biomarkers.insulin, 50);  // Max 50 reference
+            updateMetric('a1c', data.biomarkers.a1c, 10);          // Max 10 reference
+            updateMetric('albumin', data.biomarkers.albumin, 200); // Max 200 reference
+
+            // 5. Update Charts
+            renderRadar(data);
+            renderScatter(data);
+            renderDoughnut(data.risk_probability);
         }
 
-        function updateExplanation(data, prob, pct) {
-            const explainer = document.getElementById('ai-explanation');
-            let text = "";
-            const b = data.biomarkers;
-
-            if (prob > 0.7) {
-                text = `CRITICAL ALERT: The neural network has flagged this patient with <span class="text-red-300 font-bold">${pct}% confidence</span>. ` +
-                       `Primary contributors appear to be ${b.a1c > 6.5 ? `elevated A1C levels (${b.a1c}%)` : ''} ` +
-                       `${b.a1c > 6.5 && b.glucose > 140 ? 'and ' : ''}` +
-                       `${b.glucose > 140 ? `high fasting glucose (${b.glucose} mg/dL)` : ''}. ` +
-                       `This pattern strongly correlates with diabetic risk factors in the training dataset.`;
-            } else if (prob > 0.4) {
-                text = `CAUTION: While not strictly classified as high risk, the predicted probability is elevated at <span class="text-yellow-300 font-bold">${pct}%</span>. ` +
-                       `The model detects metabolic stress markers. Specifically, ${b.insulin > 20 ? `insulin levels (${b.insulin} uU/mL)` : 'biomarker combinations'} ` +
-                       `are deviating from the healthy baseline. Preventative monitoring is advised.`;
-            } else {
-                text = `HEALTHY PROFILE: The model predicts a low probability of risk (<span class="text-emerald-300 font-bold">${pct}%</span>). ` +
-                       `All key biomarkers (Glucose: ${b.glucose}, A1C: ${b.a1c}) are within or near standard healthy ranges. No immediate interventions suggested by the AI.`;
-            }
-            explainer.innerHTML = text;
+        function updateMetric(id, value, max) {
+            document.getElementById(`metric-${id}`).innerText = value;
+            // Simple visual calculation for bar width
+            let pct = (value / max) * 100;
+            if(pct > 100) pct = 100;
+            document.getElementById(`bar-${id}`).style.width = `${pct}%`;
         }
 
-        // --- CHART 1: Half-Doughnut Gauge ---
-        function renderRiskChart(riskValue) {
-            const ctx = document.getElementById('riskChart').getContext('2d');
-            const safeValue = 1 - riskValue;
+        // ==========================================
+        //  CHARTS ENGINE
+        // ==========================================
+        
+        // Chart 1: Radar (Fingerprint)
+        function renderRadar(data) {
+            const ctx = document.getElementById('radarChart').getContext('2d');
             
-            document.getElementById('risk-percent').innerText = `${(riskValue * 100).toFixed(1)}%`;
-            const color = riskValue > 0.5 ? '#ef4444' : '#10b981';
+            // Normalize data to 0-100 scale for comparison
+            // Values are approximate "percent of unhealthy max"
+            const metrics = [
+                (data.biomarkers.glucose / 200) * 100,
+                (data.biomarkers.insulin / 30) * 100,
+                (data.biomarkers.a1c / 9) * 100,
+                (data.biomarkers.albumin / 100) * 100
+            ];
 
-            if (riskChartInstance) riskChartInstance.destroy();
+            if (charts.radar) charts.radar.destroy();
 
-            riskChartInstance = new Chart(ctx, {
-                type: 'doughnut',
+            charts.radar = new Chart(ctx, {
+                type: 'radar',
                 data: {
-                    labels: ['Risk', 'Safe'],
+                    labels: ['Glucose', 'Insulin', 'A1C', 'Albumin'],
                     datasets: [{
-                        data: [riskValue, safeValue],
-                        backgroundColor: [color, '#f1f5f9'],
-                        borderWidth: 0,
-                        hoverOffset: 0
+                        label: 'Patient Profile',
+                        data: metrics,
+                        backgroundColor: 'rgba(99, 102, 241, 0.2)',
+                        borderColor: '#6366f1',
+                        pointBackgroundColor: '#6366f1',
+                        borderWidth: 2
+                    }, {
+                        label: 'Healthy Baseline',
+                        data: [45, 20, 50, 10], // Static healthy shape
+                        borderColor: '#10b981',
+                        borderWidth: 1,
+                        borderDash: [5, 5],
+                        fill: false,
+                        pointRadius: 0
                     }]
                 },
                 options: {
-                    cutout: '85%',
-                    circumference: 180,
-                    rotation: -90,
-                    plugins: { legend: { display: false }, tooltip: { enabled: false } },
                     responsive: true,
                     maintainAspectRatio: false,
-                    animation: { animateScale: true, animateRotate: true }
+                    scales: {
+                        r: {
+                            angleLines: { color: '#f1f5f9' },
+                            grid: { color: '#f1f5f9' },
+                            suggestedMin: 0,
+                            suggestedMax: 100,
+                            ticks: { display: false }
+                        }
+                    },
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } }
                 }
             });
         }
 
-        // --- CHART 2: Bar Chart ---
-        function renderBarChart(bio) {
-            const ctx = document.getElementById('barChart').getContext('2d');
+        // Chart 2: Scatter (Population)
+        function renderScatter(currentPatient) {
+            const ctx = document.getElementById('scatterChart').getContext('2d');
             
-            // Heuristic normalization for visual comparison
-            // Ideally 0 is healthy, higher is deviation
-            const norms = [
-                (bio.glucose - 100) / 25,
-                (bio.insulin - 10) / 5,
-                (bio.a1c - 5.7) * 2,
-                (bio.albumin - 10) / 10
-            ];
+            // Prepare dataset: All patients as dots
+            const points = ALL_PATIENTS.map(p => ({
+                x: p.biomarkers.glucose,
+                y: p.biomarkers.insulin,
+                r: p.id === currentPatient.id ? 12 : 6, // Make current patient BIG
+                name: p.name // Custom property for tooltip
+            }));
 
-            if (barChartInstance) barChartInstance.destroy();
+            // Color logic: Current patient is Purple, High risk others Red, Low risk others Gray
+            const colors = ALL_PATIENTS.map(p => {
+                if (p.id === currentPatient.id) return '#8b5cf6'; // Purple (Selected)
+                return p.risk_probability > 0.5 ? '#fca5a5' : '#e2e8f0'; // Red/Gray
+            });
 
-            barChartInstance = new Chart(ctx, {
-                type: 'bar',
+            if (charts.scatter) charts.scatter.destroy();
+
+            charts.scatter = new Chart(ctx, {
+                type: 'bubble',
                 data: {
-                    labels: ['Glucose', 'Insulin', 'A1C', 'Albumin'],
                     datasets: [{
-                        label: 'Deviation Score',
-                        data: norms,
-                        backgroundColor: norms.map(v => v > 1.5 ? '#ef4444' : (v > 0.5 ? '#f59e0b' : '#10b981')),
-                        borderRadius: 6,
-                        barThickness: 40
+                        label: 'Cohort',
+                        data: points,
+                        backgroundColor: colors,
+                        borderColor: 'transparent'
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const raw = context.raw;
+                                    return `${raw.name}: Glu ${raw.x}, Ins ${raw.y}`;
+                                }
+                            }
+                        }
+                    },
                     scales: {
-                        y: { 
-                            display: true,
-                            grid: { color: '#f1f5f9' },
-                            title: { display: true, text: 'Deviation from Baseline' }
+                        x: { 
+                            title: { display: true, text: 'Glucose Level' },
+                            grid: { display: false }
                         },
-                        x: { grid: { display: false } }
+                        y: { 
+                            title: { display: true, text: 'Insulin Level' },
+                            grid: { color: '#f8fafc' } 
+                        }
                     }
                 }
             });
         }
 
-        // Simple number animation utility
-        function animateValue(id, start, end, duration, isFloat=false) {
-            const obj = document.getElementById(id);
-            let startTimestamp = null;
-            const step = (timestamp) => {
-                if (!startTimestamp) startTimestamp = timestamp;
-                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                const val = (progress * (end - start) + start);
-                obj.innerHTML = isFloat ? val.toFixed(1) : Math.floor(val);
-                if (progress < 1) {
-                    window.requestAnimationFrame(step);
+        // Chart 3: Doughnut (Risk)
+        function renderDoughnut(prob) {
+            const ctx = document.getElementById('riskDoughnut').getContext('2d');
+            const pct = (prob * 100).toFixed(1);
+            
+            document.getElementById('risk-percent-display').innerText = `${pct}%`;
+            document.getElementById('risk-percent-display').className = `text-4xl font-bold ${prob > 0.5 ? 'text-red-400' : 'text-emerald-400'}`;
+
+            if (charts.doughnut) charts.doughnut.destroy();
+
+            charts.doughnut = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Risk', 'Safe'],
+                    datasets: [{
+                        data: [prob, 1 - prob],
+                        backgroundColor: [
+                            prob > 0.5 ? '#f87171' : '#34d399', // Red or Green
+                            'rgba(255,255,255,0.1)' // Faint track
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    cutout: '80%',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, tooltip: { enabled: false } }
                 }
-            };
-            window.requestAnimationFrame(step);
+            });
         }
     </script>
 </body>
